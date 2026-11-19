@@ -193,6 +193,38 @@
  #rounds .round-table td.team .club>span:last-child{max-width:106px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
  #rounds .round-table .result{font-size:16px}
 }
+
+/* Solo Jornadas móvil: no modifica Clasificación, Equipos ni escritorio. */
+.mobile-round-match,.fa-mobile{display:none}
+@media(max-width:650px){
+ #rounds #roundtabs{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px!important;overflow:visible!important;width:100%!important;flex-wrap:unset!important;white-space:normal!important}
+ #rounds #roundtabs button{min-width:0!important;width:100%!important;padding:11px 0!important;margin:0!important;font-size:12px!important;line-height:1.2!important;white-space:normal!important;border-radius:10px!important;touch-action:manipulation}
+ #rounds #roundtabs button[data-round="FA"]{grid-column:5/span 3!important;font-size:11px!important;padding:8px 3px!important}
+ #rounds #roundtabs .fa-desktop{display:none!important}
+ #rounds #roundtabs .fa-mobile{display:inline!important}
+ #rounds .round-options{display:none!important}
+ #rounds .desktop-round-match{display:none!important}
+ #rounds .mobile-round-match{display:block!important}
+ #rounds .mobile-match{padding:13px!important;margin:10px 0!important;overflow:hidden}
+ #rounds .mobile-match .matchhead{margin-bottom:6px!important}
+ #rounds .mobile-match .matchhead strong{font-size:13px!important}
+ #rounds .mobile-match .matchhead .small{font-size:11px!important;margin-top:3px}
+ #rounds .mobile-match-status{margin:8px 0 12px}
+ #rounds .mobile-match-status .status,#rounds .mobile-match-status .pill{font-size:11px!important}
+ #rounds .mobile-duel{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:7px;min-height:64px}
+ #rounds .mobile-duel-team{min-width:0;text-align:center;font-size:11px;font-weight:650;line-height:1.25;overflow-wrap:anywhere}
+ #rounds .mobile-duel-team .club{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;white-space:normal!important}
+ #rounds .mobile-duel-team img{max-width:31px!important;max-height:31px!important;object-fit:contain}
+ #rounds .mobile-duel-score{font-size:22px;font-weight:800;white-space:nowrap;color:#20283d}
+ #rounds .mobile-duel-score small{font-size:15px;font-weight:500;color:#8490a3}
+ #rounds .mobile-show-sets{display:block;width:100%;margin-top:11px;padding:9px;border:1px solid #e2e5ec;border-radius:9px;background:#f8f9fc;color:#ed3b87;font-size:12px;font-weight:750;cursor:pointer}
+ #rounds .mobile-show-sets span{margin-left:5px}
+ #rounds .mobile-sets{margin-top:10px;border-top:1px solid #e5e7ed;font-size:12px}
+ #rounds .mobile-sets[hidden]{display:none!important}
+ #rounds .mobile-sets-heading,#rounds .mobile-set-row{display:grid;grid-template-columns:42px 1fr 1fr;align-items:center;text-align:center;gap:5px;padding:7px 4px;border-bottom:1px solid #eef0f4}
+ #rounds .mobile-sets-heading{color:#677287;font-size:10px;font-weight:700;overflow-wrap:anywhere}
+ #rounds .mobile-set-row span{color:#677287;font-weight:700}
+}
 </style><style>
 .team-row{grid-template-columns:72px 126px minmax(125px,1.1fr) minmax(125px,1fr) 37px 37px minmax(125px,1fr) 65px 125px 30px}
 .team-points{font-weight:850;text-align:center;color:#26334a}.team-points.earned{color:#168c60}
@@ -535,6 +567,16 @@ const cols='<tr><th class="team">Equipo</th><th>Resultado</th>'+Array.from({leng
 const won=(i,p)=>{if(!detail)return '–';if(roundDetailed){if(p===3)return detail[i][p];return String(detail[i][p]);}if(p===3)return Number.parseInt(detail[i][p],10)>Number.parseInt(detail[1-i][p],10)?'1':'0';const a=Number(detail[i][p]),b=Number(detail[1-i][p]);return a>b?'1':'0'};
 const body=[m.a,m.b].map((name,i)=>{const winner=m.score&&scores[i]>scores[1-i];const result='<span class="result-wrap"><span class="result-value">'+scores[i]+'</span>'+(winner?'<span class="winner-ball" aria-label="Ganador">🏐</span>':'<span class="winner-ball placeholder" aria-hidden="true">🏐</span>')+'</span>';return '<tr><td class="team">'+club(name)+'</td><td class="result">'+result+'</td>'+Array.from({length:7},(_,p)=>{const win=detail&&Number.parseInt(detail[i][p],10)>Number.parseInt(detail[1-i][p],10);return '<td class="'+(win?'set-winner':'')+'">'+won(i,p)+'</td>'}).join('')+'</tr>'}).join('');
 return '<article class="match">'+header+'<div class="scroll"><table class="round-table"><colgroup><col class="round-team-col"><col class="round-result-col">'+Array(7).fill('<col class="round-set-col">').join('')+'</colgroup><thead>'+cols+'</thead><tbody>'+body+'</tbody></table></div></article>'}
+
+/* Tarjeta alternativa exclusiva para Jornadas en pantallas móviles. */
+function mobileMatchCard(m){
+ const scores=m.score||['–','–'];
+ const details=m.details;
+ const header='<div class="matchhead"><div><strong>'+when(m)+'</strong><div class="small">'+esc(m.venue||'Instalación por confirmar')+'</div></div></div>';
+ const team=(name)=>'<div class="mobile-duel-team">'+club(name)+'</div>';
+ const sets=details?'<div class="mobile-sets" hidden><div class="mobile-sets-heading"><span>Set</span><span>'+esc(short(m.a))+'</span><span>'+esc(short(m.b))+'</span></div>'+Array.from({length:7},(_,i)=>'<div class="mobile-set-row"><span>P'+(i+1)+'</span><strong>'+esc(String(details[0][i]??'–'))+'</strong><strong>'+esc(String(details[1][i]??'–'))+'</strong></div>').join('')+'</div>':'';
+ return '<article class="match mobile-match">'+header+'<div class="mobile-match-status">'+state(m)+'</div><div class="mobile-duel">'+team(m.a)+'<div class="mobile-duel-score"><span>'+scores[0]+' <small>–</small> '+scores[1]+'</span></div>'+team(m.b)+'</div>'+(details?'<button type="button" class="mobile-show-sets" aria-expanded="false">Ver sets <span>⌄</span></button>'+sets:'')+'</article>';
+}
 let expanded=false;
 function standings(){let data=Object.fromEntries(teams.map(t=>[t,{name:t,pts:0,jug:0,gan:0,per:0,ga3:0,ga2:0,per1:0,per0:0,jfav:0,jcon:0,pfav:0,pcon:0}]));
 for(const m of matches.filter(x=>x.score)){const [a,b]=[data[m.a],data[m.b]], [x,y]=m.score;for(let [self,other,w,l] of [[a,b,x,y],[b,a,y,x]]){self.jug++;self.jfav+=w;self.jcon+=l;if(w>l){self.gan++;self.pts+=w>=6?3:2;if(w>=6)self.ga3++;else self.ga2++}else{self.per++;self.pts+=w>=2?1:0;if(w>=2)self.per1++;else self.per0++}}
@@ -567,8 +609,14 @@ const body=Array.from({length:2},()=>'<tr><td class="team"><span class="fa-empty
 return '<article class="match"><div class="fa-title">'+label+'</div>'+head+'<div class="scroll"><table class="round-table"><colgroup><col class="round-team-col"><col class="round-result-col">'+Array(7).fill('<col class="round-set-col">').join('')+'</colgroup><thead>'+cols+'</thead><tbody>'+body+'</tbody></table></div></article>';
 }
 function rounds(){
- document.getElementById('roundtabs').innerHTML=Array.from({length:11},(_,i)=>'<button type="button" class="'+(selectedRound===i+1?'active':'')+'" data-round="'+(i+1)+'">J'+(i+1)+'</button>').join('')+'<button type="button" class="'+(selectedRound==='FA'?'active':'')+'" data-round="FA">FA</button>';
- document.getElementById('roundmatches').innerHTML=selectedRound==='FA'?(roundStatus==='all'||roundStatus==='pending'?['Semifinal 1','Semifinal 2','Final','3.er puesto'].map(finalPhaseCard).join(''):'<p class="filter-empty">No hay partidos con este estado en la fase de ascenso.</p>'):(()=>{const visible=matches.filter(m=>m.j===selectedRound&&(roundStatus==='all'||matchStatus(m)===roundStatus));return visible.length?visible.map(matchCard).join(''):'<p class="filter-empty">No hay partidos con este estado en esta jornada.</p>'})();
+ document.getElementById('roundtabs').innerHTML=Array.from({length:11},(_,i)=>'<button type="button" class="'+(selectedRound===i+1?'active':'')+'" data-round="'+(i+1)+'">J'+(i+1)+'</button>').join('')+'<button type="button" class="'+(selectedRound==='FA'?'active':'')+'" data-round="FA"><span class="fa-desktop">FA</span><span class="fa-mobile">Fase de ascenso</span></button>';
+ document.getElementById('roundmatches').innerHTML=selectedRound==='FA'?(roundStatus==='all'||roundStatus==='pending'?['Semifinal 1','Semifinal 2','Final','3.er puesto'].map(finalPhaseCard).join(''):'<p class="filter-empty">No hay partidos con este estado en la fase de ascenso.</p>'):(()=>{const visible=matches.filter(m=>m.j===selectedRound&&(roundStatus==='all'||matchStatus(m)===roundStatus));return visible.length?visible.map(m=>'<div class="desktop-round-match">'+matchCard(m)+'</div><div class="mobile-round-match">'+mobileMatchCard(m)+'</div>').join(''):'<p class="filter-empty">No hay partidos con este estado en esta jornada.</p>'})();
+ document.querySelectorAll('#roundmatches .mobile-show-sets').forEach(button=>button.addEventListener('click',()=>{
+  const panel=button.nextElementSibling;
+  panel.hidden=!panel.hidden;
+  button.setAttribute('aria-expanded',String(!panel.hidden));
+  button.innerHTML=panel.hidden?'Ver sets <span>⌄</span>':'Ocultar sets <span>⌃</span>';
+ }));
  /* Navegación delegada de jornadas: los botones se regeneran al cambiar de ronda. */
 }rounds();
 const sel=document.getElementById('teamselect');sel.innerHTML=teams.map(t=>'<option value="'+esc(t)+'" '+(t==='CV MVP'?'selected':'')+'>'+esc(short(t))+'</option>').join('');
