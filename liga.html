@@ -897,7 +897,18 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.quer
  if(scroll)scroll.addEventListener('scroll',close,{passive:true});
  window.addEventListener('resize',close,{passive:true});
 })();
-</script><script>
+</script><style>
+@media(max-width:650px){
+ /* Escudos: el comparado mide el 75% del principal */
+ #teams .mobile-selected-logo.comparison .logo,
+ #teams .mobile-selected-logo.comparison img{width:90px!important;height:90px!important;max-width:90px!important;max-height:90px!important}
+ #teams .mobile-selected-logo.comparison .logo img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important}
+ /* El equipo principal se centra cuando no hay comparativa */
+ #teams .mobile-selected-logos:has(>.mobile-selected-logo:only-child)>.mobile-selected-logo{grid-column:1/-1!important}
+ /* Nombres completos, reduciendo tamaño en pantallas estrechas */
+ #teams .mobile-team-grid select{font-size:clamp(9px,2.65vw,12px)!important;letter-spacing:-.025em!important;padding-left:5px!important;padding-right:17px!important;min-width:0!important;width:100%!important}
+}
+</style><script>
 (function(){
  const panel=document.getElementById('teams'),selector=document.getElementById('teamselect');
  if(!panel||!selector)return;
@@ -910,8 +921,8 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.quer
  const oldRender=teamMatches;
  let mobileChosen=false;
  function options(){
-   main.innerHTML='<option value="">Selecciona equipo</option>'+teams.map(t=>'<option value="'+esc(t)+'">'+esc(short(t))+'</option>').join('');main.value=mobileChosen?selector.value:'';
-   compare.innerHTML='<option value="">Comparar con...</option>'+teams.filter(t=>t!==selector.value).map(t=>'<option value="'+esc(t)+'">'+esc(short(t))+'</option>').join('');compare.value=comparisonTeam||'';
+   main.innerHTML='<option value="">Selecciona equipo</option>'+teams.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');main.value=mobileChosen?selector.value:'';
+   compare.innerHTML='<option value="">Comparar con...</option>'+teams.filter(t=>t!==selector.value).map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');compare.value=comparisonTeam||'';
  }
  function lineChart(primary,secondary){
    const W=360,H=170,left=22,right=9,top=13,bottom=29,plotW=W-left-right,plotH=H-top-bottom;
@@ -923,21 +934,26 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.quer
    rows.forEach((row,i)=>{
      const map=new Map(matches.filter(m=>m.a===row.team||m.b===row.team).map(m=>[m.j,m]));
      const pts=Array.from({length:11},(_,k)=>{const m=map.get(k+1);return m?matchPoints(m,row.team):null});
-     let path='',drawing=false;
-     pts.forEach((p,k)=>{if(p===null){drawing=false;return}path+=(drawing?' L':' M')+x(k+1)+' '+y(p);drawing=true});
-     svg+='<path d="'+path+'" fill="none" stroke="'+row.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+     // Barras finas independientes, desde 0 hasta los puntos obtenidos.
+     // En comparativa, separar ligeramente las dos series para ver ambas.
+     pts.forEach((p,k)=>{if(p===null)return;
+       const offset=secondary?(i===0?-3:3):0;
+       svg+='<line x1="'+(x(k+1)+offset)+'" y1="'+y(0)+'" x2="'+(x(k+1)+offset)+'" y2="'+y(p)+'" stroke="'+row.color+'" stroke-width="3" stroke-linecap="round"/>';
+     });
      pts.forEach((p,k)=>{if(p===null)return;const m=map.get(k+1),rival=m.a===row.team?m.b:m.a;
        const title=esc(row.team)+' · J'+(k+1)+' · '+p+' pts · vs. '+esc(rival);
-       svg+='<circle class="mobile-point" cx="'+x(k+1)+'" cy="'+y(p)+'" r="4.3" fill="'+row.color+'" stroke="white" stroke-width="1.5" data-tip="'+title+'" tabindex="0" role="button" aria-label="'+title+'"/>';
-       svg+='<circle class="mobile-point-hit" cx="'+x(k+1)+'" cy="'+y(p)+'" r="12" fill="transparent" data-tip="'+title+'" tabindex="0" role="button" aria-label="'+title+'"/>';
+       svg+='<circle class="mobile-point" cx="'+(x(k+1)+(secondary?(i===0?-3:3):0))+'" cy="'+y(p)+'" r="4.3" fill="'+row.color+'" stroke="white" stroke-width="1.5" data-tip="'+title+'" tabindex="0" role="button" aria-label="'+title+'"/>';
+       svg+='<circle class="mobile-point-hit" cx="'+(x(k+1)+(secondary?(i===0?-3:3):0))+'" cy="'+y(p)+'" r="12" fill="transparent" data-tip="'+title+'" tabindex="0" role="button" aria-label="'+title+'"/>';
      });
    });
    svg+='</svg>';
    const box=document.createElement('div');box.className='mobile-points-chart';box.innerHTML=svg;
    const tip=document.createElement('div');tip.className='mobile-chart-tip';tip.hidden=true;box.appendChild(tip);
-   const show=e=>{const c=e.target.closest('[data-tip]');if(!c)return;const rect=box.getBoundingClientRect(),r=c.getBoundingClientRect();tip.textContent=c.getAttribute('data-tip');tip.hidden=false;tip.style.left=Math.max(68,Math.min(rect.width-68,r.left+r.width/2-rect.left))+'px';tip.style.top=Math.max(38,r.top-rect.top-8)+'px'};
+   let tipTimer=null;
+   const hide=()=>{if(tipTimer!==null){clearTimeout(tipTimer);tipTimer=null}tip.hidden=true};
+   const show=e=>{const c=e.target.closest('[data-tip]');if(!c)return;const rect=box.getBoundingClientRect(),r=c.getBoundingClientRect();tip.textContent=c.getAttribute('data-tip');tip.hidden=false;tip.style.left=Math.max(68,Math.min(rect.width-68,r.left+r.width/2-rect.left))+'px';tip.style.top=Math.max(38,r.top-rect.top-8)+'px';if(tipTimer!==null)clearTimeout(tipTimer);tipTimer=setTimeout(()=>{tip.hidden=true;tipTimer=null},2000)};
    box.addEventListener('click',show);box.addEventListener('focusin',show);
-   box.addEventListener('mouseleave',()=>tip.hidden=true);
+   box.addEventListener('mouseleave',hide);
    return box;
  }
  function compactDuel(chosen,other){
