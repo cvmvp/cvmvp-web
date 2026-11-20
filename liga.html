@@ -614,6 +614,22 @@
  #rounds .mobile-match .mobile-venue{grid-column:1 / -1;grid-row:2;display:block!important;min-width:0;width:100%;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25;color:#667085;letter-spacing:-.12px}
  #rounds .mobile-sets-table .grouped-set{display:block!important;white-space:normal!important;overflow-wrap:normal!important;font-size:9px!important;line-height:1.1!important}
 }
+/* CV MVP: últimos ajustes visuales exclusivos de Jornadas en móvil. */
+@media(max-width:650px){
+ /* P4 admite el máximo de tres sets agrupados; el resto recupera espacio. */
+ #rounds .mobile-sets-table th:nth-child(5),
+ #rounds .mobile-sets-table td:nth-child(5){width:23%!important}
+ #rounds .mobile-sets-table th:nth-child(2),#rounds .mobile-sets-table td:nth-child(2),
+ #rounds .mobile-sets-table th:nth-child(3),#rounds .mobile-sets-table td:nth-child(3),
+ #rounds .mobile-sets-table th:nth-child(4),#rounds .mobile-sets-table td:nth-child(4),
+ #rounds .mobile-sets-table th:nth-child(6),#rounds .mobile-sets-table td:nth-child(6),
+ #rounds .mobile-sets-table th:nth-child(7),#rounds .mobile-sets-table td:nth-child(7),
+ #rounds .mobile-sets-table th:nth-child(8),#rounds .mobile-sets-table td:nth-child(8){width:calc((100% - 30px - 23%) / 6)!important}
+ /* Aumentar solo los escudos del enfrentamiento, no los del detalle de sets. */
+ #rounds .mobile-duel .mobile-side > .logo{width:48px!important;height:48px!important;max-width:48px!important;max-height:48px!important;flex:none!important}
+ #rounds .mobile-duel .mobile-side > .logo img{width:100%!important;height:100%!important;max-width:48px!important;max-height:48px!important;object-fit:contain!important}
+ #rounds .mobile-duel .mobile-side-name{font-size:11px!important;line-height:1.2!important}
+}
 </style>
 <script>
 /* Navegación principal independiente de la carga de datos y gráficos. */
