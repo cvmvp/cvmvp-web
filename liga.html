@@ -605,6 +605,15 @@
   #league-content .scroll{max-height:70vh;overflow-y:auto;overflow-x:auto;position:relative}
   #table thead th{position:sticky;top:0;z-index:12;background:#f3f4f7}
 }
+
+/* CV MVP: sede a ancho completo en Jornadas móvil */
+@media(max-width:650px){
+ #rounds .mobile-match .mobile-head{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:8px!important;row-gap:3px!important;align-items:start!important}
+ #rounds .mobile-match .mobile-head-info{grid-column:1;grid-row:1;min-width:0}
+ #rounds .mobile-match .mobile-status{grid-column:2;grid-row:1;max-width:none!important}
+ #rounds .mobile-match .mobile-venue{grid-column:1 / -1;grid-row:2;display:block!important;min-width:0;width:100%;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25;color:#667085;letter-spacing:-.12px}
+ #rounds .mobile-sets-table .grouped-set{display:block!important;white-space:normal!important;overflow-wrap:normal!important;font-size:9px!important;line-height:1.1!important}
+}
 </style>
 <script>
 /* Navegación principal independiente de la carga de datos y gráficos. */
@@ -649,9 +658,10 @@ return '<article class="match">'+header+'<div class="scroll"><table class="round
 const mobileLogo=n=>{const markup=club(n);const match=markup.match(/<span class="logo[^>]*>[\s\S]*?<\/span>/);return match?match[0]:''};
 function mobileMatchCard(m){
  const scores=m.score||['–','–'],details=m.details;
- const header='<div class="matchhead mobile-head"><div class="mobile-head-info"><strong>'+when(m)+'</strong><div class="small">'+esc(m.venue||'Instalación por confirmar')+'</div></div><div class="mobile-status">'+state(m)+'</div></div>';
+ const venue=m.venue||'Sede por confirmar';const venueSize=venue.length>53?8:venue.length>43?9:venue.length>35?10:11;
+ const header='<div class="matchhead mobile-head"><div class="mobile-head-info"><strong>'+when(m)+'</strong></div><div class="mobile-status">'+state(m)+'</div><div class="mobile-venue" style="font-size:'+venueSize+'px">'+esc(venue)+'</div></div>';
  const team=(name,score,win)=>'<div class="mobile-side">'+mobileLogo(name)+'<div class="mobile-side-name">'+esc(short(name))+'</div><div class="mobile-side-result">'+esc(String(score))+(win?'<span class="mobile-winner-ball" aria-label="Ganador">🏐</span>':'')+'</div></div>';
- const setCell=(v,other)=>{const x=String(v??'–'),y=String(other??'–');const nx=Number.parseInt(x,10),ny=Number.parseInt(y,10);return '<td class="'+(x!=='–'&&Number.isFinite(nx)&&Number.isFinite(ny)&&nx>ny?'set-won':'')+'">'+esc(x).replace(/\s*\(/g,'<span class="grouped-set">(').replace(/\)/g,')</span>').replace(/\//g,'/<wbr>')+'</td>'};
+ const setCell=(v,other)=>{const x=String(v??'–'),y=String(other??'–');const nx=Number.parseInt(x,10),ny=Number.parseInt(y,10);return '<td class="'+(x!=='–'&&Number.isFinite(nx)&&Number.isFinite(ny)&&nx>ny?'set-won':'')+'">'+esc(x).replace(/\s*\(([^)]*)\)/g,(_,g)=>'<span class="grouped-set">('+g.replace(/\//g,'/<wbr>')+')</span>')+'</td>'};
  const sets=details?'<div class="mobile-sets" hidden><table class="mobile-sets-table"><thead><tr><th scope="col" aria-label="Equipo"></th>'+Array.from({length:7},(_,i)=>'<th scope="col">P'+(i+1)+'</th>').join('')+'</tr></thead><tbody>'+[0,1].map(r=>'<tr><th scope="row" aria-label="'+esc(short(r?m.b:m.a))+'">'+mobileLogo(r?m.b:m.a)+'</th>'+Array.from({length:7},(_,i)=>setCell(details[r][i],details[1-r][i])).join('')+'</tr>').join('')+'</tbody></table></div>':'';
  const winA=m.score&&Number(scores[0])>Number(scores[1]),winB=m.score&&Number(scores[1])>Number(scores[0]);
  return '<article class="match mobile-match">'+header+'<div class="mobile-duel">'+team(m.a,scores[0],winA)+team(m.b,scores[1],winB)+'</div>'+(details?'<button type="button" class="mobile-show-sets" aria-expanded="false">Ver sets <span>⌄</span></button>'+sets:'')+'</article>';
