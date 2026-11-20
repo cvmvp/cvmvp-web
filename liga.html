@@ -963,8 +963,16 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.quer
    const primary=matches.filter(m=>m.a===chosen||m.b===chosen).map(m=>({m,secondary:false}));
    const secondary=other?matches.filter(m=>m.a===other||m.b===other).map(m=>({m,secondary:true})):[];
    const grouped=new Map();
-   const alreadyShown=other?matches.find(m=>m.score&&((m.a===chosen&&m.b===other)||(m.a===other&&m.b===chosen))):null;
-   [...primary,...secondary].filter(entry=>!alreadyShown||entry.m.id!==alreadyShown.id).forEach(entry=>{const j=entry.m.j;if(!grouped.has(j))grouped.set(j,[]);grouped.get(j).push(entry)});
+   // El enfrentamiento directo permanece arriba y también en su jornada.
+   // Un mismo partido compartido por los dos equipos se muestra una sola vez,
+   // independientemente del orden local/visitante o de cuál sea el principal.
+   const seenMatchIds=new Set();
+   [...primary,...secondary].forEach(entry=>{
+     const key=entry.m.id != null ? String(entry.m.id) : [entry.m.j,...[entry.m.a,entry.m.b].sort()].join('|');
+     if(seenMatchIds.has(key))return;
+     seenMatchIds.add(key);
+     const j=entry.m.j;if(!grouped.has(j))grouped.set(j,[]);grouped.get(j).push(entry);
+   });
    list.innerHTML=[...grouped.keys()].sort((a,b)=>a-b).map(j=>'<div class="team-j-label">Jornada '+j+'</div>'+grouped.get(j).sort((a,b)=>Number(a.secondary)-Number(b.secondary)).map(({m})=>mobileMatchCard(m)).join('')).join('');
    list.querySelectorAll('.mobile-show-sets').forEach(b=>b.onclick=()=>{const detail=b.nextElementSibling;detail.hidden=!detail.hidden;b.setAttribute('aria-expanded',String(!detail.hidden));b.innerHTML=detail.hidden?'Ver sets <span>⌄</span>':'Ocultar sets <span>⌃</span>'});
  }
