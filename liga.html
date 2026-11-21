@@ -343,6 +343,20 @@
  #rounds .round-controls #roundtabs button{padding:12px 10px!important}
  #rounds .round-controls .round-options{flex:0 0 auto!important;white-space:nowrap!important}
 }
+
+/* Controles individuales de detalle en Jornadas, solo escritorio */
+@media (min-width:651px){
+ #roundmatches .desktop-round-match .desktop-detail-action{display:flex;justify-content:flex-end;margin-top:12px}
+ #roundmatches .desktop-detail-button{border:1px solid #dfe3eb;background:#fff;color:#222b40;border-radius:9px;padding:8px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+ #roundmatches .desktop-detail-button:hover{border-color:#e83787;color:#e83787}
+ #roundmatches .desktop-round-match:not(.details-open) .round-table th:nth-child(n+3),
+ #roundmatches .desktop-round-match:not(.details-open) .round-table td:nth-child(n+3),
+ #roundmatches .desktop-round-match:not(.details-open) .round-table col.round-set-col{display:none}
+ #roundmatches .desktop-round-match:not(.details-open) .round-table{width:100%;table-layout:fixed}
+ #roundmatches .desktop-round-match:not(.details-open) .round-table .team{width:75%;text-align:left}
+ #roundmatches .desktop-round-match:not(.details-open) .round-table .result{width:25%}
+}
+@media (max-width:650px){#roundmatches .desktop-detail-action{display:none!important}}
 </style><style>
 .team-row{grid-template-columns:72px 126px minmax(125px,1.1fr) minmax(125px,1fr) 37px 37px minmax(125px,1fr) 65px 125px 30px}
 .team-points{font-weight:850;text-align:center;color:#26334a}.team-points.earned{color:#168c60}
@@ -856,12 +870,12 @@ const weekendRange=m=>{if(!m.date)return 'Fecha por confirmar';const sunday=dt(m
 const hasConfirmedSchedule=m=>Boolean(m.date&&m.time&&m.time!=='0:00'&&m.time!=='00:00');
 const matchStatus=m=>{if(m.score)return 'registered';if(!hasConfirmedSchedule(m))return 'pending';const [d,mo,y]=m.date.split('/').map(Number);const [h,min]=m.time.split(':').map(Number);return new Date(y,mo-1,d,h,min)<new Date()?'played':'scheduled'};
 const state=m=>{const status=matchStatus(m);return status==='registered'?'<span class="badge">Jugado - Acta registrada</span>':status==='played'?'<span class="badge played">Jugado - Acta pendiente</span>':status==='scheduled'?'<span class="badge scheduled">Programado</span>':'<span class="badge pending">Pendiente de programar</span>'};
-let roundDetailed=false;let roundStatus='all';document.getElementById('round-status').addEventListener('change',e=>{roundStatus=e.target.value;rounds()});document.getElementById('detail-toggle').addEventListener('change',e=>{roundDetailed=e.target.checked;rounds()});
-function matchCard(m){const detail=m.details||null,scores=m.score||['–','–'];const header='<div class="matchhead"><div><strong>'+when(m)+'</strong><div class="small">'+esc(m.venue||'Instalación por confirmar')+'</div></div><div class="meta">'+state(m)+'</div></div>';
+let roundDetailed=false;let roundStatus='all';document.getElementById('round-status').addEventListener('change',e=>{roundStatus=e.target.value;rounds()});document.getElementById('detail-toggle').addEventListener('change',e=>{roundDetailed=e.target.checked;desktopDetailOverrides.clear();rounds()});
+function matchCard(m, showDetails=roundDetailed){const detail=m.details||null,scores=m.score||['–','–'];const header='<div class="matchhead"><div><strong>'+when(m)+'</strong><div class="small">'+esc(m.venue||'Instalación por confirmar')+'</div></div><div class="meta">'+state(m)+'</div></div>';
 const cols='<tr><th class="team">Equipo</th><th>Resultado</th>'+Array.from({length:7},(_,i)=>'<th>P'+(i+1)+'</th>').join('')+'</tr>';
-const won=(i,p)=>{if(!detail)return '–';if(roundDetailed){if(p===3)return detail[i][p];return String(detail[i][p]);}if(p===3)return Number.parseInt(detail[i][p],10)>Number.parseInt(detail[1-i][p],10)?'1':'0';const a=Number(detail[i][p]),b=Number(detail[1-i][p]);return a>b?'1':'0'};
+const won=(i,p)=>{if(!detail)return '–';if(showDetails){if(p===3)return detail[i][p];return String(detail[i][p]);}if(p===3)return Number.parseInt(detail[i][p],10)>Number.parseInt(detail[1-i][p],10)?'1':'0';const a=Number(detail[i][p]),b=Number(detail[1-i][p]);return a>b?'1':'0'};
 const body=[m.a,m.b].map((name,i)=>{const winner=m.score&&scores[i]>scores[1-i];const result='<span class="result-wrap"><span class="result-value">'+scores[i]+'</span>'+(winner?'<span class="winner-ball" aria-label="Ganador">🏐</span>':'<span class="winner-ball placeholder" aria-hidden="true">🏐</span>')+'</span>';return '<tr><td class="team">'+club(name)+'</td><td class="result">'+result+'</td>'+Array.from({length:7},(_,p)=>{const win=detail&&Number.parseInt(detail[i][p],10)>Number.parseInt(detail[1-i][p],10);return '<td class="'+(win?'set-winner':'')+'">'+won(i,p)+'</td>'}).join('')+'</tr>'}).join('');
-return '<article class="match">'+header+'<div class="scroll"><table class="round-table"><colgroup><col class="round-team-col"><col class="round-result-col">'+Array(7).fill('<col class="round-set-col">').join('')+'</colgroup><thead>'+cols+'</thead><tbody>'+body+'</tbody></table></div></article>'}
+return '<article class="match">'+header+'<div class="scroll"><table class="round-table"><colgroup><col class="round-team-col"><col class="round-result-col">'+Array(7).fill('<col class="round-set-col">').join('')+'</colgroup><thead>'+cols+'</thead><tbody>'+body+'</tbody></table></div><div class="desktop-detail-action"><button type="button" class="desktop-detail-button" aria-expanded="'+String(showDetails)+'">'+(showDetails?'Ocultar detalle':'Ver detalle')+'</button></div></article>'}
 
 /* Tarjetas móviles de jornadas y fase de ascenso. Escritorio intacto. */
 const mobileLogo=n=>{const markup=club(n);const match=markup.match(/<span class="logo[^>]*>[\s\S]*?<\/span>/);return match?match[0]:''};
@@ -911,9 +925,12 @@ const cols='<tr><th class="team">Equipo</th><th>Resultado</th>'+Array.from({leng
 const body=Array.from({length:2},()=>'<tr><td class="team"><span class="fa-empty">—</span></td><td class="result">–</td>'+Array(7).fill('<td>–</td>').join('')+'</tr>').join('');
 return '<article class="match"><div class="fa-title">'+label+'</div>'+head+'<div class="scroll"><table class="round-table"><colgroup><col class="round-team-col"><col class="round-result-col">'+Array(7).fill('<col class="round-set-col">').join('')+'</colgroup><thead>'+cols+'</thead><tbody>'+body+'</tbody></table></div></article>';
 }
+const desktopDetailOverrides=new Map();
+function desktopMatchKey(m){return [m.j,m.a,m.b].join('|')}
+function desktopDetailIsOpen(m){return desktopDetailOverrides.has(desktopMatchKey(m))?desktopDetailOverrides.get(desktopMatchKey(m)):roundDetailed}
 function rounds(){
  document.getElementById('roundtabs').innerHTML=Array.from({length:11},(_,i)=>'<button type="button" class="'+(selectedRound===i+1?'active':'')+'" data-round="'+(i+1)+'">J'+(i+1)+'</button>').join('')+'<button type="button" class="'+(selectedRound==='FA'?'active':'')+'" data-round="FA"><span class="fa-desktop">Fase de ascenso</span><span class="fa-mobile">Fase de ascenso</span></button>';
- document.getElementById('roundmatches').innerHTML=selectedRound==='FA'?(roundStatus==='all'||roundStatus==='pending'?['Semifinal 1','Semifinal 2','Final','3.er puesto'].map(label=>'<div class="desktop-round-match">'+finalPhaseCard(label)+'</div><div class="mobile-round-match">'+mobileFinalPhaseCard(label)+'</div>').join('')+'<div class="mobile-round-match"><div class="mobile-promotion-key"><strong>Ascenso a 1.ª División Autonómica</strong><p>Según las Bases de Competición 2026-2027</p><div><i class="key-dot key-green"></i>1.º y 2.º: ascienden</div><div><i class="key-dot key-yellow"></i>3.º: asciende si no hay descensos de 1.ª Nacional con prioridad sobre esa plaza</div><div><i class="key-dot key-gray"></i>4.º: no asciende</div></div></div>':'<p class="filter-empty">No hay partidos con este estado en la fase de ascenso.</p>'):(()=>{const visible=matches.filter(m=>m.j===selectedRound);const desktopVisible=visible.filter(m=>roundStatus==='all'||matchStatus(m)===roundStatus);return visible.length?visible.map(m=>'<div class="desktop-round-match"'+(desktopVisible.includes(m)?'':' hidden')+'>'+matchCard(m)+'</div><div class="mobile-round-match">'+mobileMatchCard(m)+'</div>').join(''):'<p class="filter-empty">No hay partidos con este estado en esta jornada.</p>'})();
+ document.getElementById('roundmatches').innerHTML=selectedRound==='FA'?(roundStatus==='all'||roundStatus==='pending'?['Semifinal 1','Semifinal 2','Final','3.er puesto'].map(label=>'<div class="desktop-round-match">'+finalPhaseCard(label)+'</div><div class="mobile-round-match">'+mobileFinalPhaseCard(label)+'</div>').join('')+'<div class="mobile-round-match"><div class="mobile-promotion-key"><strong>Ascenso a 1.ª División Autonómica</strong><p>Según las Bases de Competición 2026-2027</p><div><i class="key-dot key-green"></i>1.º y 2.º: ascienden</div><div><i class="key-dot key-yellow"></i>3.º: asciende si no hay descensos de 1.ª Nacional con prioridad sobre esa plaza</div><div><i class="key-dot key-gray"></i>4.º: no asciende</div></div></div>':'<p class="filter-empty">No hay partidos con este estado en la fase de ascenso.</p>'):(()=>{const visible=matches.filter(m=>m.j===selectedRound);const desktopVisible=visible.filter(m=>roundStatus==='all'||matchStatus(m)===roundStatus);return visible.length?visible.map(m=>'<div class="desktop-round-match '+(desktopDetailIsOpen(m)?'details-open':'')+'" data-detail-key="'+esc(desktopMatchKey(m))+'"'+(desktopVisible.includes(m)?'':' hidden')+'>'+matchCard(m,desktopDetailIsOpen(m))+'</div><div class="mobile-round-match">'+mobileMatchCard(m)+'</div>').join(''):'<p class="filter-empty">No hay partidos con este estado en esta jornada.</p>'})();
  document.querySelectorAll('#roundmatches .mobile-show-sets').forEach(button=>button.addEventListener('click',()=>{
   const panel=button.nextElementSibling;
   panel.hidden=!panel.hidden;
@@ -921,7 +938,16 @@ function rounds(){
   button.innerHTML=panel.hidden?'Ver detalle <span>⌄</span>':'Ocultar detalle <span>⌃</span>';
  }));
  /* Navegación delegada de jornadas: los botones se regeneran al cambiar de ronda. */
-}rounds();
+}document.getElementById('roundmatches').addEventListener('click',event=>{
+ const button=event.target.closest('.desktop-detail-button');
+ if(!button)return;
+ const wrapper=button.closest('.desktop-round-match');
+ if(!wrapper)return;
+ const key=wrapper.dataset.detailKey;
+ desktopDetailOverrides.set(key,!wrapper.classList.contains('details-open'));
+ rounds();
+});
+rounds();
 const sel=document.getElementById('teamselect');sel.innerHTML=teams.map(t=>'<option value="'+esc(t)+'" '+(t==='CV MVP'?'selected':'')+'>'+esc(short(t))+'</option>').join('');
 let comparePicking=false;
 function renderTeamButtons(){
