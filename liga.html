@@ -334,6 +334,15 @@
  #rounds .round-controls .round-filter-label select{max-width:190px}
  #rounds .round-controls .switch{white-space:nowrap}
 }
+/* Corrección de precedencia: mantener la leyenda en orden 1-2, 3, 4. */
+@media(min-width:651px){
+ .promotion-key .key-items{display:flex!important;flex-wrap:nowrap!important;justify-content:flex-start!important;gap:22px!important;align-items:center!important}
+ .promotion-key .key-items span{flex:0 0 auto!important;white-space:nowrap!important}
+ #rounds .round-controls{flex-wrap:nowrap!important}
+ #rounds .round-controls #roundtabs{flex:1 1 auto!important;flex-wrap:nowrap!important;gap:6px!important}
+ #rounds .round-controls #roundtabs button{padding:12px 10px!important}
+ #rounds .round-controls .round-options{flex:0 0 auto!important;white-space:nowrap!important}
+}
 </style><style>
 .team-row{grid-template-columns:72px 126px minmax(125px,1.1fr) minmax(125px,1fr) 37px 37px minmax(125px,1fr) 65px 125px 30px}
 .team-points{font-weight:850;text-align:center;color:#26334a}.team-points.earned{color:#168c60}
