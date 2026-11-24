@@ -1159,6 +1159,19 @@ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.quer
  /* Nombres completos, reduciendo tamaño en pantallas estrechas */
  #teams .mobile-team-grid select{font-size:clamp(9px,2.65vw,12px)!important;letter-spacing:-.025em!important;padding-left:5px!important;padding-right:17px!important;min-width:0!important;width:100%!important}
 }
+
+/* Centrado vertical del duelo en tarjetas cerradas de escritorio. */
+@media (min-width:651px){
+ #rounds #roundmatches > .desktop-round-match:not(.details-open) .desktop-compact-card .mobile-duel{
+   flex:1 0 auto;
+   align-content:center;
+   margin-bottom:4px;
+ }
+ #rounds #roundmatches > .desktop-round-match:not(.details-open) .desktop-compact-card .desktop-detail-button{
+   margin-top:12px!important;
+   flex-shrink:0;
+ }
+}
 </style><script>
 (function(){
  const panel=document.getElementById('teams'),selector=document.getElementById('teamselect');
